@@ -82,10 +82,21 @@ def reverse_calc(in_str: str) -> str:
         if num_symb not in OP_LEVELS:
             final_str += num_symb + " "
             continue
-        while (
-            len(symbol_stack) > 0 and OP_LEVELS[num_symb] < OP_LEVELS[symbol_stack[-1]]
-        ):
-            final_str += symbol_stack.pop() + " "
+
+        if num_symb != "(":
+            # If the symbol is an open paren, we don't unwind the stack until we find its
+            # corresponding closing friend.
+            # Note that we still add it to the stack, though, such that the next symbol
+            # we compare against the paren will compare against 0 == OP_LEVELS["("], and
+            # will always _not_ unwind the stack
+
+            # Secondly, by making ")" == 0, we will _always_ unwind all the way until
+            # an opening paren, since that's the only thing whose value is not greater than ")"
+            while (
+                len(symbol_stack) > 0
+                and OP_LEVELS[num_symb] < OP_LEVELS[symbol_stack[-1]]
+            ):
+                final_str += symbol_stack.pop() + " "
 
         if num_symb == ")":
             # We don't need parens in our final string, so we should wipe the corresponding
@@ -113,5 +124,6 @@ assert reverse_calc("3 + 4 ^ 5 * 6 / 7") == "3 4 5 ^ 6 7 / * +"
 assert reverse_calc("3 * 4 ^ 5 + 6 / 7") == "3 4 5 ^ * 6 7 / +"
 assert reverse_calc("3 * 4 - 5 ^ 6 / 7") == "3 4 * 5 6 ^ 7 / -"
 assert reverse_calc("( ( 3 - 4 ) ^ 2 ) * 2") == "3 4 - 2 ^ 2 *"
-print(reverse_calc("( ( 3 - 4 ) ^ ( 1 * 3 ) ) * 2"))
+assert reverse_calc("3 * ( 4 - 5 )") == "3 4 5 - *"
 assert reverse_calc("( ( 3 - 4 ) ^ ( 1 * 3 ) ) * 2") == "3 4 - 1 3 * ^ 2 *"
+assert reverse_calc("2 ^ ( 3 * 4 - 5 + 6 )") == "2 3 4 * 5 6 + - ^"
