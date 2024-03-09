@@ -4,7 +4,7 @@ from numbers import Number
 If someone asks you for a calculator, USE A STACK
 """
 
-OP_LEVELS = {"^": 3, "*": 2, "/": 2, "+": 1, "-": 1}
+OP_LEVELS = {"^": 3, "*": 2, "/": 2, "+": 1, "-": 1, "(": 0, ")": 0}
 
 
 def operate(left, symb, right) -> Number:
@@ -60,3 +60,49 @@ assert calculate("6 4 +") == 10
 assert calculate("3 4 * 5 6 * +") == 42
 assert calculate("3 4 2 * -") == -5
 assert calculate("3 4 - 2 *") == -2
+
+################# Let's do the reverse reverse! ########################
+
+
+def reverse_calc(in_str: str) -> str:
+    """Given an input string "6 + 4", convert it to the RPN format "6 4 +"
+
+    Note: Should take parentheses into account, just to make it harder on myself.
+
+    Soln: Just like the basic calculator, except instead of doing the calculation when
+    we unwind the stack, we just put it into a string
+    """
+    # Don't have to worry about making ints, since we're not doing the actual calculation
+    split_str = in_str.split(" ")
+    working_stack = []
+    symbol_stack = []
+    final_str = ""
+
+    for num_symb in split_str:
+        if num_symb not in OP_LEVELS:
+            final_str += num_symb + " "
+            continue
+        symbol_stack.append(num_symb)
+        while (
+            len(symbol_stack) > 1
+            and OP_LEVELS[symbol_stack[-1]] < OP_LEVELS[symbol_stack[-2]]
+        ):
+            final_str += symbol_stack.pop() + " "
+
+    # Add last missing symbols
+
+
+"""What are the commonalities here? Ignoring parentheses.
+1. If symbol order increases, add the number to the command and save the symbol for later. 
+2. Once symbol order decreases, add all symbols then carry on
+
+If parentheses, do the usual until the end of the paren, at which point you _must_
+unwind the stack until the opening paren
+"""
+assert reverse_calc("6 + 4") == "6 4 +"
+assert reverse_calc("3 * 4 + 5 * 6") == "3 4 * 5 6 * +"
+assert reverse_calc("3 + 4 ^ 5 * 6 / 7") == "3 4 5 ^ 6 7 / * +"
+assert reverse_calc("3 - 4 * 2") == "3 4 2 * -"
+assert reverse_calc("( 3 - 4 ) * 2") == "3 4 - 2 *"
+assert reverse_calc("( ( 3 - 4 ) ^ 2 ) * 2") == "3 4 - 2 ^ 2 *"
+assert reverse_calc("( ( 3 - 4 ) ^ ( 1 * 3 ) ) * 2") == "3 4 - 1 3 * ^ 2 *"
