@@ -69,12 +69,15 @@ def reverse_calc(in_str: str) -> str:
 
     Note: Should take parentheses into account, just to make it harder on myself.
 
-    Soln: Just like the basic calculator, except instead of doing the calculation when
-    we unwind the stack, we just put it into a string
+    Soln: Ignoring parentheses:
+    1. If symbol order increases, add the number to the command and save the symbol for later.
+    2. Once symbol order decreases, add all symbols until smaller again, then carry on
+
+    If parentheses, do the usual until the end of the paren, at which point you _must_
+    unwind the stack until the opening paren
     """
     # Don't have to worry about making ints, since we're not doing the actual calculation
     split_str = in_str.split(" ")
-    working_stack = []
     symbol_stack = []
     final_str = ""
 
@@ -112,13 +115,6 @@ def reverse_calc(in_str: str) -> str:
     return final_str.removesuffix(" ")
 
 
-"""What are the commonalities here? Ignoring parentheses.
-1. If symbol order increases, add the number to the command and save the symbol for later. 
-2. Once symbol order decreases, add all symbols until smaller again, then carry on
-
-If parentheses, do the usual until the end of the paren, at which point you _must_
-unwind the stack until the opening paren
-"""
 assert reverse_calc("6 + 4") == "6 4 +"
 assert reverse_calc("3 + 4 ^ 5 * 6 / 7") == "3 4 5 ^ 6 7 / * +"
 assert reverse_calc("3 * 4 ^ 5 + 6 / 7") == "3 4 5 ^ * 6 7 / +"
